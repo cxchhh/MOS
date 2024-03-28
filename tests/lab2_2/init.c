@@ -42,8 +42,8 @@ void page_strong_check(void) {
 
 	printk("va2pa(boot_pgdir, 0x0) is %x\n", va2pa(boot_pgdir, 0x0));
 	printk("page2pa(pp1) is %x\n", page2pa(pp1));
-
 	assert(va2pa(boot_pgdir, 0x0) == page2pa(pp1));
+	
 	assert(pp1->pp_ref == 1);
 	assert(va2pa(boot_pgdir, PAGE_SIZE) == page2pa(pp2));
 	assert(pp2->pp_ref == 1);
