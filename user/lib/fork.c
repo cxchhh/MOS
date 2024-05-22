@@ -82,7 +82,7 @@ static void duppage(u_int envid, u_int vpn) {
 	/* Hint: The page should be first mapped to the child before remapped in the parent. (Why?)
 	 */
 	/* Exercise 4.10: Your code here. (2/2) */
-	if((perm & PTE_D) && !(perm & PTE_LIBRARY) && !(perm & PTE_LIBRARY)){
+	if((perm & PTE_D) && !(perm & PTE_COW) && !(perm & PTE_LIBRARY)){
 		perm &= ~PTE_D;
 		perm |= PTE_COW;
 		syscall_mem_map(0, (vpn * PAGE_SIZE), envid, (vpn * PAGE_SIZE), perm);
