@@ -25,7 +25,8 @@ ifeq ($(call lab-ge,6), true)
 	INITAPPS     += icode.x \
 			testpipe.x \
 			testpiperace.x \
-			testptelibrary.x
+			testptelibrary.x \
+			testbss.x
 
 	USERLIB      += wait.o spawn.o pipe.o
 	USERAPPS     := num.b  \

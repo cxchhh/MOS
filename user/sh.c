@@ -91,9 +91,18 @@ int parsecmd(char **argv, int *rightpipe) {
 			// utilize 'debugf' to print relevant messages,
 			// and subsequently terminate the process using 'exit'.
 			/* Exercise 6.5: Your code here. (1/3) */
+			fd = open(t, O_RDONLY);
+			if(fd < 0){
+				goto rinerr;
+			}
+			dup(fd, 0);
+			close(fd);
 
-			user_panic("< redirection not implemented");
-
+			break;
+			rinerr: {
+				debugf("error on redirecting input to %s\n", t);
+				exit();
+			}
 			break;
 		case '>':
 			if (gettoken(0, &t) != 'w') {
@@ -106,9 +115,18 @@ int parsecmd(char **argv, int *rightpipe) {
 			// utilize 'debugf' to print relevant messages,
 			// and subsequently terminate the process using 'exit'.
 			/* Exercise 6.5: Your code here. (2/3) */
+			fd = open(t, O_WRONLY);
+			if (fd < 0){
+				goto routerr;
+			}
+			dup(fd, 1);
+			close(fd);
 
-			user_panic("> redirection not implemented");
-
+			break;
+			routerr: {
+				debugf("error on redirecting output to %s\n", t);
+				exit();
+			}
 			break;
 		case '|':;
 			/*
@@ -128,9 +146,20 @@ int parsecmd(char **argv, int *rightpipe) {
 			 */
 			int p[2];
 			/* Exercise 6.5: Your code here. (3/3) */
-
-			user_panic("| not implemented");
-
+			pipe(p);
+			*rightpipe = fork();
+			if(*rightpipe == 0){
+				dup(p[0], 0);
+				close(p[0]);
+				close(p[1]);
+				return parsecmd(argv, rightpipe);
+			}
+			else{
+				dup(p[1], 1);
+				close(p[1]);
+				close(p[0]);
+				return argc;
+			}
 			break;
 		}
 	}
