@@ -26,9 +26,14 @@ ifeq ($(call lab-ge,6), true)
 			testpipe.x \
 			testpiperace.x \
 			testptelibrary.x \
-			testbss.x
+			testbss.x \
+			testsigint.x \
+			testsigill.x \
+			testsigsegv.x \
+			testsigchld.x \
+			testsigsys.x
 
-	USERLIB      += wait.o spawn.o pipe.o
+	USERLIB      += wait.o spawn.o pipe.o signal.o
 	USERAPPS     := num.b  \
 			echo.b \
 			halt.b \
@@ -42,7 +47,12 @@ ifeq ($(call lab-ge,6), true)
 			testbss.b \
 			testfdsharing.b \
 			pingpong.b \
-			init.b
+			init.b \
+			testsigint.b \
+			testsigill.b \
+			testsigsegv.b \
+			testsigchld.b \
+			testsigsys.b
 endif
 
 USERLIB := $(addprefix lib/, $(USERLIB)) $(wildcard ../lib/*.o)

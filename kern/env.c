@@ -258,6 +258,16 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	e->env_id = mkenvid(e);
 	e->env_asid = asid;
 	e->env_parent_id = parent_id;
+
+	e->env_sigset.sig = 0;
+	e->env_sigpending.sig = 0;
+	e->env_sigrecv = 0;
+	e->env_sig_flag = 0;
+	for(int i=SIG_MIN;i<=SIG_MAX;i++){
+		e->env_sigaction[i-1].sa_handler = NULL;
+		e->env_sigaction[i-1].sa_mask.sig = 0;
+	}
+	
 	/* Step 4: Initialize the sp and 'cp0_status' in 'e->env_tf'.
 	 *   Set the EXL bit to ensure that the processor remains in kernel mode during context
 	 * recovery. Additionally, set UM to 1 so that when ERET unsets EXL, the processor
@@ -418,7 +428,6 @@ void env_free(struct Env *e) {
 void env_destroy(struct Env *e) {
 	/* Hint: free e. */
 	env_free(e);
-
 	/* Hint: schedule to run a new environment. */
 	if (curenv == e) {
 		curenv = NULL;
@@ -464,7 +473,7 @@ void env_run(struct Env *e) {
 	/* Step 2: Change 'curenv' to 'e'. */
 	curenv = e;
 	curenv->env_runs++; // lab6
-
+	//printk("run %x\n", e->env_id);
 	/* Step 3: Change 'cur_pgdir' to 'curenv->env_pgdir', switching to its address space. */
 	/* Exercise 3.8: Your code here. (1/2) */
 	cur_pgdir = curenv->env_pgdir;

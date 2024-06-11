@@ -14,6 +14,11 @@ END(handle_\exception)
 .text
 
 FEXPORT(ret_from_exception)
+	move    a0, sp
+	addiu   sp, sp, -8
+	jal 	do_signal
+	nop
+	addiu   sp, sp, 8
 	RESTORE_ALL
 	eret
 
@@ -36,3 +41,4 @@ BUILD_HANDLER sys do_syscall
 #endif
 
 BUILD_HANDLER reserved do_reserved
+BUILD_HANDLER ill do_ill

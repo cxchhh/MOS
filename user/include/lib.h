@@ -68,6 +68,11 @@ int syscall_ipc_recv(void *dstva);
 int syscall_cgetc(void);
 int syscall_write_dev(void *va, u_int dev, u_int len);
 int syscall_read_dev(void *va, u_int dev, u_int len);
+int syscall_sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset);
+int syscall_sigaction(int signum, const struct sigaction *newact, struct sigaction *oldact);
+int syscall_kill(u_int envid, int sig);
+int syscall_finish_sig(u_int envid, u_int signum, struct Trapframe *tf);
+int syscall_set_sig_entry(u_int envid, void (*func)(u_int, u_int, void (*handler)(int), struct Trapframe *));
 
 // ipc.c
 void ipc_send(u_int whom, u_int val, const void *srcva, u_int perm);
@@ -118,6 +123,9 @@ int read_map(int fd, u_int offset, void **blk);
 int remove(const char *path);
 int ftruncate(int fd, u_int size);
 int sync(void);
+
+// signal
+int env_set_sig_entry(void);
 
 #define user_assert(x)                                                                             \
 	do {                                                                                       \

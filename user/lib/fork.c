@@ -93,6 +93,23 @@ static void duppage(u_int envid, u_int vpn) {
 	}
 }
 
+static void __attribute__((noreturn)) sig_entry(u_int envid, u_int signum, void (*handler)(int), struct Trapframe *tf) {
+	//debugf("%x %d in sig_entry! %x\n", envid, signum, handler);
+	if(handler != NULL){
+		handler(signum);
+	}
+	else if(signum == SIGINT || signum == SIGILL || signum == SIGSEGV){
+        syscall_env_destroy(envid);
+		return;
+    }
+	
+	syscall_finish_sig(envid, signum, tf);
+}
+
+int env_set_sig_entry(){
+	return syscall_set_sig_entry(0, sig_entry);
+}
+
 /* Overview:
  *   User-level 'fork'. Create a child and then copy our address space.
  *   Set up ours and its TLB Mod user exception entry to 'cow_entry'.
@@ -111,6 +128,10 @@ int fork(void) {
 	/* Step 1: Set our TLB Mod user exception entry to 'cow_entry' if not done yet. */
 	if (env->env_user_tlb_mod_entry != (u_int)cow_entry) {
 		try(syscall_set_tlb_mod_entry(0, cow_entry));
+	}
+
+	if (env->env_user_sig_entry != (u_int)sig_entry) {
+		try(syscall_set_sig_entry(0, sig_entry));
 	}
 
 	/* Step 2: Create a child env that's not ready to be scheduled. */
@@ -137,6 +158,7 @@ int fork(void) {
 	 */
 	/* Exercise 4.15: Your code here. (2/2) */
 	try(syscall_set_tlb_mod_entry(child, cow_entry));
+	try(syscall_set_sig_entry(child, sig_entry));
 	try(syscall_set_env_status(child, ENV_RUNNABLE));
 	return child;
 }
