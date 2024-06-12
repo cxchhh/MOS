@@ -31,7 +31,8 @@ ifeq ($(call lab-ge,6), true)
 			testsigill.x \
 			testsigsegv.x \
 			testsigchld.x \
-			testsigsys.x
+			testsigsys.x \
+			testsig.x
 
 	USERLIB      += wait.o spawn.o pipe.o signal.o
 	USERAPPS     := num.b  \
@@ -52,7 +53,8 @@ ifeq ($(call lab-ge,6), true)
 			testsigill.b \
 			testsigsegv.b \
 			testsigchld.b \
-			testsigsys.b
+			testsigsys.b \
+			testsig.b
 endif
 
 USERLIB := $(addprefix lib/, $(USERLIB)) $(wildcard ../lib/*.o)

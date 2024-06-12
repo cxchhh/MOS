@@ -83,6 +83,6 @@ int sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset){
 
 // 获取当前被阻塞且未处理的信号集，并将其存储在__set中。
 int sigpending(sigset_t *__set){
-    __set->sig = env->env_sigpending.sig;
+    __set->sig = env->env_sig_pending.sig;
     return 0;
 }

@@ -93,8 +93,9 @@ static void duppage(u_int envid, u_int vpn) {
 	}
 }
 
-static void __attribute__((noreturn)) sig_entry(u_int envid, u_int signum, void (*handler)(int), struct Trapframe *tf) {
+static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int envid, u_int signum, void (*handler)(int)) {
 	//debugf("%x %d in sig_entry! %x\n", envid, signum, handler);
+	int r;
 	if(handler != NULL){
 		handler(signum);
 	}
@@ -102,8 +103,9 @@ static void __attribute__((noreturn)) sig_entry(u_int envid, u_int signum, void 
         syscall_env_destroy(envid);
 		return;
     }
-	
-	syscall_finish_sig(envid, signum, tf);
+	if((r = syscall_finish_sig(envid, signum, tf)) != 0){
+		user_panic("syscall_finish_sig returned %d", r);
+	}
 }
 
 int env_set_sig_entry(){

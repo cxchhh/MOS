@@ -59,8 +59,9 @@ void mips_init(u_int argc, char **argv, char **penv, u_int ram_low_size) {
 	// ENV_CREATE(user_pingpong);
 
 	// lab6:
-	ENV_CREATE(user_icode);  // This must be the first env!
+	ENV_CREATE(user_testsigint);  // This must be the first env!
 	ENV_CREATE(fs_serv); 
+	ENV_CREATE(user_testsig);
 	//ENV_CREATE(user_testpipe);
 	
 

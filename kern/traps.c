@@ -34,56 +34,81 @@ void do_reserved(struct Trapframe *tf) {
 void do_ill(struct Trapframe *tf){
     u_int sig = SIGILL;
     if(curenv->env_sigset.sig & (1 << (sig - 1))){
-		curenv->env_sigpending.sig |= (1 << (sig - 1));
+		curenv->env_sig_blocked.sig |= (1 << (sig - 1));
 		return 0;
 	}
 
-	curenv->env_sigrecv |= (1 << (sig - 1));
-	curenv->env_sigset.sig |= curenv->env_sigaction[sig - 1].sa_mask.sig;
+	curenv->env_sig_pending.sig |= (1 << (sig - 1));
     return;
 }
+
+// void foo(struct Trapframe *tf){
+//     panic("no: %x\n", tf->regs);
+// }
 
 
 void do_signal(struct Trapframe *tf){
     
     u_int sig;
     for(sig = SIG_MIN; sig <= SIG_MAX; sig++){
-        if(curenv->env_sigrecv & (1 << (sig - 1))){
-            break;
+        if(curenv->env_sig_pending.sig & (1 << (sig - 1))){
+            int in_stack = 0;
+            for(int j=0;j<=curenv->env_sig_top;j++){
+                if(curenv->env_sig_stack[j] == sig){
+                    in_stack = 1;
+                    break;
+                }
+            }
+            if(!in_stack){
+                break;
+            }
         }
     }
     
     if(sig > SIG_MAX){
         return;
     }
-    if(curenv->env_sig_flag && !(sig == SIGSEGV && curenv->env_sig_flag != SIGSEGV)){
+    // printk("%x flag %d, pending %x, sig %d\n", curenv->env_id, curenv->env_sig_flag,curenv->env_sig_pending, sig);
+
+    if(curenv->env_sig_flag == sig){
         return;
     }
-    curenv->env_sig_flag = sig;
-    //printk("%x recv %d %x\n", curenv->env_id, sig, curenv->env_user_sig_entry);
-    // struct Trapframe tmp_tf = *tf;
-	// if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
-	// 	tf->regs[29] = UXSTACKTOP; // 将栈指针指向用户异常处理栈
-	// }
-	// tf->regs[29] -= sizeof(struct Trapframe); // 将当前的 Trapframe 压入异常处理栈
-	// *(struct Trapframe *)tf->regs[29] = tmp_tf;
-	
+    //printk("%x recv %d %x %x \n", curenv->env_id, sig, curenv->env_user_sig_entry, tf->cp0_badvaddr);
+    
 	if (curenv->env_user_sig_entry) {
-		tf->regs[4] = curenv->env_id;
-		tf->regs[5] = sig;
-		tf->regs[6] = curenv->env_sigaction[sig - 1].sa_handler;
-		tf->regs[7] = tf->regs[29];
+        if(curenv->env_sig_top == ENV_MAX_SIG){
+            panic("%x sig stack overflow, %d\n", curenv->env_id, sig);
+        }
+        curenv->env_sig_flag = sig;
+        curenv->env_sigset.sig = curenv->env_sigaction[sig - 1].sa_mask.sig;
+
+        curenv->env_sig_top++;
+        curenv->env_sig_stack[curenv->env_sig_top] = sig;
+        //printk("0 tf: %x\n", tf->regs[29]);
+        // int tmp29 = tf->regs[29];
+        // struct Trapframe tmp_tf = *tf;
+        // if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
+        //     tf->regs[29] = UXSTACKTOP;
+        // }
+        // tf->regs[29] -= sizeof(struct Trapframe);
+        // *(struct Trapframe *)tf->regs[29] = tmp_tf;
+        // tf->regs[29] = tmp29;
+
+        tf->regs[4] = tf->regs[29];
+		tf->regs[5] = curenv->env_id;
+		tf->regs[6] = sig;
+		tf->regs[7] = curenv->env_sigaction[sig - 1].sa_handler;
 		tf->regs[29] -= sizeof(tf->regs[4]);
 		tf->regs[29] -= sizeof(tf->regs[5]);
 		tf->regs[29] -= sizeof(tf->regs[6]);
-		tf->regs[29] -= sizeof(tf->regs[7]);
-        
+        tf->regs[29] -= sizeof(tf->regs[7]);
+
 		tf->cp0_epc = curenv->env_user_sig_entry;
+        return;
 	}
     else if(sig == SIGINT || sig == SIGILL || sig == SIGSEGV){
         env_destroy(curenv);
 		return;
     }
-
     return;
 }

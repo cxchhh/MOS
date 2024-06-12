@@ -548,48 +548,51 @@ int sys_kill(u_int envid, int sig){
 	if((r = envid2env(envid, &e, 0)) == -E_BAD_ENV){
 		return -1;
 	}
-	//printk("send %d to %x\n", sig, e->env_id);
-	if(e->env_sigset.sig & (1 << (sig - 1))){
-		//printk("blocked: %d\n", sig);
-		e->env_sigpending.sig |= (1 << (sig - 1));
-		return 0;
-	}
 
 	if(sig == SIGKILL){
 		env_destroy(e);
 		return 0;
 	}
 
-	e->env_sigrecv |= (1 << (sig - 1));
-	//printk("now %x is %x\n", e->env_id, e->env_sigrecv);
-	e->env_sigset.sig |= e->env_sigaction[sig - 1].sa_mask.sig;
+	//printk("%x send %d to %x: %x %d\n", curenv->env_id, sig, e->env_id, e->env_sigset.sig, e->env_sig_flag);
+	if(e->env_sig_flag == sig){
+		return 0;
+	}
+	if(e->env_sigset.sig & (1 << (sig - 1))){
+		//printk("%x blocked: %d\n",e->env_id, sig);
+		e->env_sig_blocked.sig |= (1 << (sig - 1));
+		return 0;
+	}
+
+	e->env_sig_pending.sig |= (1 << (sig - 1));
+	//printk("now %x is %x\n", e->env_id, e->env_sig_pending);
 	return 0;
 }
 
 int sys_finish_sig(u_int envid, u_int signum, struct Trapframe *tf){
+	//printk("%x enter finish sig %d\n", envid, signum);
 	struct Env *e;
-	int r;
+	int r = 0;
 	try(envid2env(envid, &e, 0));
-	e->env_sigrecv &= ~(1 << (signum - 1));
-    e->env_sigset.sig &= ~e->env_sigaction[signum - 1].sa_mask.sig;
+	e->env_sig_pending.sig &= ~(1 << (signum - 1));
+
+	e->env_sig_top--;
+	u_int fa_sig = e->env_sig_stack[e->env_sig_top];
+	e->env_sig_flag = fa_sig;
+    e->env_sigset.sig = e->env_sigaction[fa_sig - 1].sa_mask.sig;
     for(int i = SIG_MIN; i <= SIG_MAX; i++){
-        if(e->env_sigrecv & (1 << (i - 1))){
-            e->env_sigset.sig |= e->env_sigaction[i - 1].sa_mask.sig;
+        if((e->env_sig_blocked.sig & (1 << (i - 1))) && !(e->env_sigset.sig & (1 << (i - 1)))){
+            e->env_sig_pending.sig |= (1 << (i - 1));
+			e->env_sig_blocked.sig &= ~(1 << (i - 1));
         }
     }
-	e->env_sig_flag = 0;
-	// if (is_illegal_va_range((u_long)tf, sizeof *tf)) {
-	// 	return -E_INVAL;
-	// }
-	// if (e == curenv) {
-	// 	*((struct Trapframe *)KSTACKTOP - 1) = *tf;
-	// 	// return `tf->regs[2]` instead of 0, because return value overrides regs[2] on
-	// 	// current trapframe.
-	// 	return tf->regs[2];
-	// } else {
-	// 	e->env_tf = *tf;
-	// 	return 0;
-	// }
+	
+	
+	//printk("%x: %x finish sig %d\n",curenv->env_id, e->env_id, signum);
+	
+	// r = sys_set_trapframe(envid, tf);
+	//printk("2 tf: %x\n", tf->regs[29]);
+	return r;
 }
 
 int sys_set_sig_entry(u_int envid, u_int func) {

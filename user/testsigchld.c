@@ -2,7 +2,7 @@
 #include <signal.h>
 
 void sigchld_handler(int sig) {
-    printf("capture SIGCHLD signal.\n");
+    debugf("capture SIGCHLD signal.\n");
     exit();
 }
 

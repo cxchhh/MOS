@@ -2,7 +2,7 @@
 #include <signal.h>
 
 void sigsegv_handler(int sig) {
-    printf("capture SIGSEGV signal.\n");
+    debugf("capture SIGSEGV signal.\n");
     exit();
 }
 
@@ -12,8 +12,8 @@ int main() {
     sigemptyset(&sa.sa_mask);
     sigaction(SIGSEGV, &sa, NULL);
     int* ptr = (int*)0x0;
-    printf("Accessing invalid memory address...\n");
+    debugf("Accessing invalid memory address...\n");
     int val = *ptr; 
-    printf("If you see this on your screen, it means that the signal is not handled correctly.\n");
+    debugf("If you see this on your screen, it means that the signal is not handled correctly.\n");
     return 0;
 }

@@ -6,6 +6,7 @@ NESTED(handle_\exception, TF_SIZE + 8, zero)
 	move    a0, sp
 	addiu   sp, sp, -8
 	jal     \handler
+	nop
 	addiu   sp, sp, 8
 	j       ret_from_exception
 END(handle_\exception)
@@ -13,7 +14,8 @@ END(handle_\exception)
 
 .text
 
-FEXPORT(ret_from_exception)
+#FEXPORT(ret_from_exception)
+NESTED(ret_from_exception, TF_SIZE + 8, zero)
 	move    a0, sp
 	addiu   sp, sp, -8
 	jal 	do_signal
@@ -21,6 +23,7 @@ FEXPORT(ret_from_exception)
 	addiu   sp, sp, 8
 	RESTORE_ALL
 	eret
+END(ret_from_exception)
 
 NESTED(handle_int, TF_SIZE, zero)
 	mfc0    t0, CP0_CAUSE
