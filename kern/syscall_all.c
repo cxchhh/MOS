@@ -590,7 +590,7 @@ int sys_finish_sig(u_int envid, u_int signum, struct Trapframe *tf){
 	
 	//printk("%x: %x finish sig %d\n",curenv->env_id, e->env_id, signum);
 	
-	// r = sys_set_trapframe(envid, tf);
+	r = sys_set_trapframe(envid, tf);
 	//printk("2 tf: %x\n", tf->regs[29]);
 	return r;
 }

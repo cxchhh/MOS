@@ -84,15 +84,13 @@ void do_signal(struct Trapframe *tf){
 
         curenv->env_sig_top++;
         curenv->env_sig_stack[curenv->env_sig_top] = sig;
-        //printk("0 tf: %x\n", tf->regs[29]);
-        // int tmp29 = tf->regs[29];
-        // struct Trapframe tmp_tf = *tf;
-        // if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
-        //     tf->regs[29] = UXSTACKTOP;
-        // }
-        // tf->regs[29] -= sizeof(struct Trapframe);
-        // *(struct Trapframe *)tf->regs[29] = tmp_tf;
-        // tf->regs[29] = tmp29;
+        
+        struct Trapframe tmp_tf = *tf;
+        if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
+            tf->regs[29] = UXSTACKTOP;
+        }
+        tf->regs[29] -= sizeof(struct Trapframe);
+        *(struct Trapframe *)tf->regs[29] = tmp_tf;
 
         tf->regs[4] = tf->regs[29];
 		tf->regs[5] = curenv->env_id;

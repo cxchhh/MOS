@@ -268,7 +268,7 @@ int env_alloc(struct Env **new, u_int parent_id) {
 		e->env_sigaction[i-1].sa_mask.sig = 0;
 	}
 
-	for(int i=0;i<ENV_MAX_SIG;i++){
+	for(int i=0;i<=ENV_MAX_SIG;i++){
 		e->env_sig_stack[i] = 0;
 	}
 	e->env_sig_top = 0;
