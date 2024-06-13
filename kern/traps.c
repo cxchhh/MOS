@@ -69,24 +69,21 @@ void do_signal(struct Trapframe *tf){
     }
     //printk("%x recv %d %x %x \n", curenv->env_id, sig, curenv->env_user_sig_entry, tf->cp0_badvaddr);
     
+    curenv->env_sig_flag = sig;
+    curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
+    curenv->env_sigset.sig = curenv->env_sigaction[sig - 1].sa_mask.sig;
+
+    curenv->env_sig_top++;
+    curenv->env_sig_stack[curenv->env_sig_top] = sig;
+    
+    struct Trapframe tmp_tf = *tf;
+    if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
+        tf->regs[29] = UXSTACKTOP;
+    }
+    tf->regs[29] -= sizeof(struct Trapframe);
+    *(struct Trapframe *)tf->regs[29] = tmp_tf;
+
 	if (curenv->env_user_sig_entry) {
-        // if(curenv->env_sig_top == ENV_MAX_SIG){
-        //     panic("%x sig stack overflow, %d\n", curenv->env_id, sig);
-        // }
-        curenv->env_sig_flag = sig;
-        curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
-        curenv->env_sigset.sig = curenv->env_sigaction[sig - 1].sa_mask.sig;
-
-        curenv->env_sig_top++;
-        curenv->env_sig_stack[curenv->env_sig_top] = sig;
-        
-        struct Trapframe tmp_tf = *tf;
-        if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
-            tf->regs[29] = UXSTACKTOP;
-        }
-        tf->regs[29] -= sizeof(struct Trapframe);
-        *(struct Trapframe *)tf->regs[29] = tmp_tf;
-
         tf->regs[4] = tf->regs[29];
 		tf->regs[5] = curenv->env_id;
 		tf->regs[6] = sig;
@@ -102,6 +99,9 @@ void do_signal(struct Trapframe *tf){
     else if(sig == SIGINT || sig == SIGILL || sig == SIGSEGV){
         env_destroy(curenv);
 		return;
+    }
+    else{
+        panic("no handler entry for %x\n", curenv->env_id);
     }
     return;
 }
