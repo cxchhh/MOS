@@ -71,7 +71,7 @@ int syscall_read_dev(void *va, u_int dev, u_int len);
 int syscall_sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset);
 int syscall_sigaction(int signum, const struct sigaction *newact, struct sigaction *oldact);
 int syscall_kill(u_int envid, int sig);
-int syscall_finish_sig(u_int envid, u_int signum, struct Trapframe *tf);
+int syscall_finish_sig(u_int envid, u_int signum, u_int old_mask, struct Trapframe *tf);
 int syscall_set_sig_entry(u_int envid, void (*func)(u_int, u_int, void (*handler)(int), struct Trapframe *));
 
 // ipc.c

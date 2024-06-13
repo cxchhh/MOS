@@ -9,7 +9,7 @@ void sigint_handler(int sig)
 void sigsegv_handler(int sig)
 {
     debugf("capture SIGSEGV signal.\n", env->env_id);
-    //debugf("fa yield\n");
+    debugf("fa yield\n");
     syscall_yield();
     debugf("SIGSEGV signal handler returns.\n");
 }
@@ -25,9 +25,9 @@ void sub()
     ipc_recv(NULL, 0, NULL);
     int ppid = env->env_parent_id;
     kill(ppid, SIGSEGV);
-    //debugf("chld yield\n");
+    debugf("chld yield\n");
     syscall_yield();
-    //debugf("back to sub\n");
+    debugf("back to sub\n");
     kill(ppid, SIGINT);
     kill(ppid, SIGCHLD);
 }

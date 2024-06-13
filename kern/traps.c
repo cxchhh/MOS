@@ -43,8 +43,12 @@ void do_ill(struct Trapframe *tf){
 
 void do_signal(struct Trapframe *tf){
     u_int sig;
+    u_int signums = curenv->env_sig_pending.sig & ~(curenv->env_sigset.sig);
+    if(curenv->env_sig_flag != 0){
+        signums &= ~(1 << (curenv->env_sig_flag - 1));
+    }
     for(sig = SIG_MIN; sig <= SIG_MAX; sig++){
-        if(curenv->env_sig_pending.sig & (1 << (sig - 1))){
+        if(signums & (1 << (sig - 1))){
             int in_stack = 0;
             for(int j=0;j<=curenv->env_sig_top;j++){
                 if(curenv->env_sig_stack[j] == sig){
@@ -61,12 +65,13 @@ void do_signal(struct Trapframe *tf){
     if(sig > SIG_MAX){
         return;
     }
-    // printk("%x flag %d, pending %x, sig %d\n", curenv->env_id, curenv->env_sig_flag,curenv->env_sig_pending, sig);
+    //printk("%x flag %d, pending %x, sig %d\n", curenv->env_id, curenv->env_sig_flag,curenv->env_sig_pending, sig);
     //printk("%x recv %d %x %x \n", curenv->env_id, sig, curenv->env_user_sig_entry, tf->cp0_badvaddr);
     
+    u_int old_mask = curenv->env_sigset.sig;
     curenv->env_sig_flag = sig;
     curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
-    curenv->env_sigset.sig = curenv->env_sigaction[sig - 1].sa_mask.sig;
+    curenv->env_sigset.sig |= curenv->env_sigaction[sig - 1].sa_mask.sig;
 
     curenv->env_sig_top++;
     curenv->env_sig_stack[curenv->env_sig_top] = sig;
@@ -83,10 +88,13 @@ void do_signal(struct Trapframe *tf){
 		tf->regs[5] = curenv->env_id;
 		tf->regs[6] = sig;
 		tf->regs[7] = curenv->env_sigaction[sig - 1].sa_handler;
-		tf->regs[29] -= sizeof(tf->regs[4]);
-		tf->regs[29] -= sizeof(tf->regs[5]);
+        
+        tf->regs[29] -= sizeof(u_int);
+        *(u_int *)tf->regs[29] = old_mask;
+		tf->regs[29] -= sizeof(tf->regs[7]);
 		tf->regs[29] -= sizeof(tf->regs[6]);
-        tf->regs[29] -= sizeof(tf->regs[7]);
+		tf->regs[29] -= sizeof(tf->regs[5]);
+        tf->regs[29] -= sizeof(tf->regs[4]);
 
 		tf->cp0_epc = curenv->env_user_sig_entry;
         return;
@@ -96,7 +104,7 @@ void do_signal(struct Trapframe *tf){
 		return;
     }
     else{
-        panic("no handler entry for %x\n", curenv->env_id);
+        //panic("no handler entry for %x\n", curenv->env_id);
     }
     return;
 }
