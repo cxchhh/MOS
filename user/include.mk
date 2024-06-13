@@ -34,7 +34,7 @@ ifeq ($(call lab-ge,6), true)
 			testsigsys.x \
 			testsig.x
 
-	USERLIB      += wait.o spawn.o pipe.o signal.o
+	USERLIB      += wait.o spawn.o pipe.o
 	USERAPPS     := num.b  \
 			echo.b \
 			halt.b \
