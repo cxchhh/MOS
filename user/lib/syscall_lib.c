@@ -87,10 +87,6 @@ int syscall_kill(u_int envid, int sig){
 	return msyscall(SYS_kill, envid, sig);
 }
 
-int syscall_finish_sig(u_int envid, u_int signum, u_int old_mask, struct Trapframe *tf){
-	return msyscall(SYS_finish_sig, envid, signum, old_mask, tf);
-}
-
 int syscall_set_sig_entry(u_int envid, void (*func)(u_int, u_int, void (*handler)(int), struct Trapframe *)) {
 	return msyscall(SYS_set_sig_entry, envid, func);
 }

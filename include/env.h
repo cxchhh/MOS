@@ -16,7 +16,6 @@
 #define ENV_RUNNABLE 1
 #define ENV_NOT_RUNNABLE 2
 
-#define ENV_MAX_SIG 32
 
 // Control block of an environment (process).
 struct Env {
@@ -49,10 +48,8 @@ struct Env {
 	sigset_t env_sig_pending; 
 	u_int env_user_sig_entry;
 	u_int env_sig_flag;
-	struct sigaction env_sigaction[SIG_MAX]; 
+	struct sigaction env_sigaction[SIG_MAX + 1]; 
 
-	u_int env_sig_stack[ENV_MAX_SIG + 1];
-	u_int env_sig_top;
 };
 
 LIST_HEAD(Env_list, Env);

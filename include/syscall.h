@@ -24,7 +24,6 @@ enum {
 	SYS_read_dev,
 	SYS_sigprocmask,
 	SYS_sigaction,
-	SYS_finish_sig,
 	SYS_set_sig_entry,
 	SYS_kill,
 	MAX_SYSNO,

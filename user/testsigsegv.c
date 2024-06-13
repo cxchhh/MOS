@@ -11,7 +11,7 @@ void sigsegv_handler(int sig) {
         cnt++;
     }
     else{
-        debugf("capture SIGSEGV signal. %d\n", cnt);
+        debugf("capture last SIGSEGV signal. %d\n", cnt);
         exit();
     }
 }

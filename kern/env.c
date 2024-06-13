@@ -263,15 +263,10 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	e->env_sig_blocked.sig = 0;
 	e->env_sig_pending.sig = 0;
 	e->env_sig_flag = 0;
-	for(int i=SIG_MIN;i<=SIG_MAX;i++){
-		e->env_sigaction[i-1].sa_handler = NULL;
-		e->env_sigaction[i-1].sa_mask.sig = 0;
+	for(int i = SIG_MIN; i <= SIG_MAX; i++){
+		e->env_sigaction[i - 1].sa_handler = NULL;
+		e->env_sigaction[i - 1].sa_mask.sig = 0;
 	}
-
-	for(int i=0;i<=ENV_MAX_SIG;i++){
-		e->env_sig_stack[i] = 0;
-	}
-	e->env_sig_top = 0;
 	
 	/* Step 4: Initialize the sp and 'cp0_status' in 'e->env_tf'.
 	 *   Set the EXL bit to ensure that the processor remains in kernel mode during context

@@ -93,19 +93,25 @@ static void duppage(u_int envid, u_int vpn) {
 	}
 }
 
-static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int envid, u_int signum, void (*handler)(int), u_int old_mask) {
-	//debugf("%x %d in sig_entry! %x %x\n", envid, signum, handler, old_mask);
+static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int signum, void (*handler)(int), u_int mask) {
+	
 	int r;
+	sigset_t sa_mask;
+	sigset_t old_mask;
+	sa_mask.sig = mask;
 	if(handler != NULL){
+		sa_mask.sig |= (1 << (signum - 1));
+		syscall_sigprocmask(SIG_BLOCK, &sa_mask, &old_mask);
+		//debugf("%x %d in sig_entry! %x %x\n", envid, signum, handler, old_mask);
 		handler(signum);
+		syscall_sigprocmask(SIG_SETMASK, &old_mask, NULL);
 	}
 	else if(signum == SIGINT || signum == SIGILL || signum == SIGSEGV){
-        syscall_env_destroy(envid);
+        syscall_env_destroy(0);
 		return;
     }
-	if((r = syscall_finish_sig(envid, signum, old_mask, tf)) != 0){
-		user_panic("syscall_finish_sig returned %d", r);
-	}
+	r = syscall_set_trapframe(0, tf);
+	user_panic("syscall_set_trapframe returned %d", r);
 }
 
 int env_set_sig_entry(){
