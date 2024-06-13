@@ -32,13 +32,7 @@ void do_reserved(struct Trapframe *tf) {
 }
 
 void do_ill(struct Trapframe *tf){
-    u_int sig = SIGILL;
-    if(curenv->env_sigset.sig & (1 << (sig - 1))){
-		curenv->env_sig_blocked.sig |= (1 << (sig - 1));
-		return 0;
-	}
-
-	curenv->env_sig_pending.sig |= (1 << (sig - 1));
+    sys_kill(0, SIGILL);
     return;
 }
 
@@ -80,6 +74,7 @@ void do_signal(struct Trapframe *tf){
         //     panic("%x sig stack overflow, %d\n", curenv->env_id, sig);
         // }
         curenv->env_sig_flag = sig;
+        curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
         curenv->env_sigset.sig = curenv->env_sigaction[sig - 1].sa_mask.sig;
 
         curenv->env_sig_top++;
