@@ -1,8 +1,17 @@
 #include <lib.h>
+int cnt = 0;
 
 void sigsegv_handler(int sig) {
-    debugf("capture SIGSEGV signal.\n");
-    exit();
+    debugf("in sigsegv handler. cnt: %d\n", cnt);
+    if(cnt <= 2){
+        kill(0, SIGSEGV);
+        debugf("capture SIGSEGV signal. %d\n", cnt);
+        cnt++;
+    }
+    else{
+        debugf("capture SIGSEGV signal. %d\n", cnt);
+        exit();
+    }
 }
 
 int main() {

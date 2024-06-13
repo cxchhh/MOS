@@ -558,6 +558,7 @@ int sys_kill(u_int envid, int sig){
 
 	//printk("%x send %d to %x: %x %d\n", curenv->env_id, sig, e->env_id, e->env_sigset.sig, e->env_sig_flag);
 	if(e->env_sig_flag == sig){
+		e->env_sig_blocked.sig |= (1 << (sig - 1));
 		return 0;
 	}
 	if(e->env_sigset.sig & (1 << (sig - 1))){
@@ -583,7 +584,7 @@ int sys_finish_sig(u_int envid, u_int signum, struct Trapframe *tf){
 	e->env_sig_flag = fa_sig;
     e->env_sigset.sig = e->env_sigaction[fa_sig - 1].sa_mask.sig;
     for(int i = SIG_MIN; i <= SIG_MAX; i++){
-        if((e->env_sig_blocked.sig & (1 << (i - 1))) && !(e->env_sigset.sig & (1 << (i - 1)))){
+        if((e->env_sig_blocked.sig & (1 << (i - 1))) && !(e->env_sigset.sig & (1 << (i - 1))) && (i != fa_sig)){
             e->env_sig_pending.sig |= (1 << (i - 1));
 			e->env_sig_blocked.sig &= ~(1 << (i - 1));
         }

@@ -76,9 +76,9 @@ void do_signal(struct Trapframe *tf){
     //printk("%x recv %d %x %x \n", curenv->env_id, sig, curenv->env_user_sig_entry, tf->cp0_badvaddr);
     
 	if (curenv->env_user_sig_entry) {
-        if(curenv->env_sig_top == ENV_MAX_SIG){
-            panic("%x sig stack overflow, %d\n", curenv->env_id, sig);
-        }
+        // if(curenv->env_sig_top == ENV_MAX_SIG){
+        //     panic("%x sig stack overflow, %d\n", curenv->env_id, sig);
+        // }
         curenv->env_sig_flag = sig;
         curenv->env_sigset.sig = curenv->env_sigaction[sig - 1].sa_mask.sig;
 
