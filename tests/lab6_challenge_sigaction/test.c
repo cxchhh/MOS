@@ -11,15 +11,11 @@ int main() {
 	sa.sa_handler = sigint_handler;
 	sigemptyset(&sa.sa_mask);
 	sigaction(SIGINT, &sa, NULL);
-    int child = fork();
-    if(child == 0){
-        while(1);
-    }
-    else{
-        debugf("Sending SIGINT to child\n");
-	    kill(child, SIGINT);
-	    debugf("fa returned\n");
-    }
-	
+	debugf("Sending SIGINT to myself\n");
+	kill(0, SIGINT);
+	debugf("ERROR: SIGINT not handled correctly\n");
+	while (1) {
+		;
+	}
 	return 0;
 }
