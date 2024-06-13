@@ -510,18 +510,20 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 
 int sys_sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset){
     if(__oset != NULL){
-        *__oset = curenv->env_sigset;
+        __oset->sig = curenv->env_sigset.sig;
     }
-
-    if(__how == SIG_BLOCK){
-        curenv->env_sigset.sig |= __set->sig;
-    }
-    else if(__how == SIG_UNBLOCK){
-        curenv->env_sigset.sig &= ~(__set->sig);
-    }
-    else if(__how == SIG_SETMASK){
-        curenv->env_sigset.sig = __set->sig;
-    }
+	if(__set != NULL){
+		if(__how == SIG_BLOCK){
+        	curenv->env_sigset.sig |= __set->sig;
+		}
+		else if(__how == SIG_UNBLOCK){
+			curenv->env_sigset.sig &= ~(__set->sig);
+		}
+		else if(__how == SIG_SETMASK){
+			curenv->env_sigset.sig = __set->sig;
+		}
+	}
+    
     return 0;
 }
 
