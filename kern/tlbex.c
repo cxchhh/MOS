@@ -98,4 +98,55 @@ void do_tlb_mod(struct Trapframe *tf) {
 		panic("TLB Mod but no user handler registered");
 	}
 }
+
 #endif
+
+void do_signal(struct Trapframe *tf){
+    u_int sig;
+    if(curenv->env_sig_pending.sig & (1 << (SIGKILL - 1))){
+        sig = SIGKILL;
+        curenv->env_sig_pending.sig = (1 << (SIGKILL - 1));
+    }
+    else{
+        u_int signums = curenv->env_sig_pending.sig & ~(curenv->env_sigset.sig);
+        for(sig = SIG_MIN; sig <= SIG_MAX; sig++){
+            if(signums & (1 << (sig - 1))){
+                break;
+            }
+        }
+    }
+    
+    if(sig > SIG_MAX){
+        return;
+    }
+    //printk("%x flag %d, pending %x, sig %d\n", curenv->env_id, curenv->env_sig_flag,curenv->env_sig_pending, sig);
+    //printk("%x recv %d %x %x \n", curenv->env_id, sig, curenv->env_user_sig_entry, curenv->env_sigaction[sig - 1].sa_handler);
+    
+    curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
+    
+    struct Trapframe tmp_tf = *tf;
+    if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
+        tf->regs[29] = UXSTACKTOP;
+    }
+    tf->regs[29] -= sizeof(struct Trapframe);
+    *(struct Trapframe *)tf->regs[29] = tmp_tf;
+
+	if (curenv->env_user_sig_entry) {
+        tf->regs[4] = tf->regs[29];
+		tf->regs[5] = sig;
+		tf->regs[6] = curenv->env_sigaction[sig - 1].sa_handler;
+        tf->regs[7] = curenv->env_sigaction[sig - 1].sa_mask.sig;
+
+		tf->regs[29] -= sizeof(tf->regs[7]);
+		tf->regs[29] -= sizeof(tf->regs[6]);
+		tf->regs[29] -= sizeof(tf->regs[5]);
+        tf->regs[29] -= sizeof(tf->regs[4]);
+
+		tf->cp0_epc = curenv->env_user_sig_entry;
+	}
+    else{
+        panic("no handler entry for %x\n", curenv->env_id);
+    }
+    return;
+}
+

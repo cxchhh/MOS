@@ -48,8 +48,9 @@ struct Env {
 	sigset_t env_sig_pending; 
 	u_int env_user_sig_entry;
 	u_int env_sig_flag;
-	struct sigaction env_sigaction[SIG_MAX + 1]; 
+	struct sigaction env_sigaction[SIG_MAX]; 
 
+	u_int protect[256];
 };
 
 LIST_HEAD(Env_list, Env);
