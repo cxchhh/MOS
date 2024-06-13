@@ -109,7 +109,7 @@ static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int sign
         exit();
 		return;
     }
-	else{
+	else if (signum == SIGSYS) {
 		tf->cp0_epc += 4;
 	}
 	r = syscall_set_trapframe(0, tf);

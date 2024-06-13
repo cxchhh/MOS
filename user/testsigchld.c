@@ -1,23 +1,21 @@
 #include <lib.h>
-#include <signal.h>
 
 void sigchld_handler(int sig) {
     debugf("capture SIGCHLD signal.\n");
-    debugf("shouldn't see this.\n");
+    exit();
 }
 
 int main() {
     struct sigaction sa;
     sa.sa_handler = sigchld_handler;
     sigemptyset(&sa.sa_mask);
-    sigaction(SIGCHLD, &sa, NULL);
-    u_int pid = syscall_getenvid();
+    //sigaction(SIGCHLD, &sa, NULL);
     if (fork() == 0) {
-        kill(pid, SIGCHLD);
-        debugf("send kill to %x\n", pid);
-        kill(pid, SIGKILL);
         exit();
     }
-    while (1);
+    else{
+        
+    }
+    
    return 0;
 }
