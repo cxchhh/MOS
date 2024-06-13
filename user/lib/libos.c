@@ -20,6 +20,7 @@ void libmain(int argc, char **argv) {
 	// set env to point at our env structure in envs[].
 	env = &envs[ENVX(syscall_getenvid())];
 
+    env_set_sig_entry();
 	// call user main routine
 	main(argc, argv);
 
@@ -28,9 +29,6 @@ void libmain(int argc, char **argv) {
 }
 
 int sigaction(int signum, const struct sigaction *newact, struct sigaction *oldact){
-    if(env->env_user_sig_entry == NULL){
-        env_set_sig_entry();
-    }
     return syscall_sigaction(signum, newact, oldact);
 }
 

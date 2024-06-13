@@ -23,7 +23,7 @@ int main() {
     struct sigaction sa;
     sa.sa_handler = sigint_handler;
     sigemptyset(&sa.sa_mask);
-    //sigaddset(&sa.sa_mask, SIGSEGV);
+    sigaddset(&sa.sa_mask, SIGSEGV);
     sigaddset(&sa.sa_mask, 21);
     sigaction(SIGINT, &sa, NULL);
 

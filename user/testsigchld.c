@@ -3,7 +3,7 @@
 
 void sigchld_handler(int sig) {
     debugf("capture SIGCHLD signal.\n");
-    exit();
+    debugf("shouldn't see this.\n");
 }
 
 int main() {
@@ -11,7 +11,11 @@ int main() {
     sa.sa_handler = sigchld_handler;
     sigemptyset(&sa.sa_mask);
     sigaction(SIGCHLD, &sa, NULL);
+    u_int pid = syscall_getenvid();
     if (fork() == 0) {
+        kill(pid, SIGCHLD);
+        debugf("send kill to %x\n", pid);
+        kill(pid, SIGKILL);
         exit();
     }
     while (1);

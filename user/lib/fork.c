@@ -94,7 +94,7 @@ static void duppage(u_int envid, u_int vpn) {
 }
 
 static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int signum, void (*handler)(int), u_int mask) {
-	
+	//debugf("%x %d in sig_entry! %x\n", env->env_id, signum, handler);
 	int r;
 	sigset_t sa_mask;
 	sigset_t old_mask;
@@ -102,12 +102,11 @@ static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int sign
 	if(handler != NULL){
 		sa_mask.sig |= (1 << (signum - 1));
 		syscall_sigprocmask(SIG_BLOCK, &sa_mask, &old_mask);
-		//debugf("%x %d in sig_entry! %x %x\n", envid, signum, handler, old_mask);
 		handler(signum);
 		syscall_sigprocmask(SIG_SETMASK, &old_mask, NULL);
 	}
-	else if(signum == SIGINT || signum == SIGILL || signum == SIGSEGV){
-        syscall_env_destroy(0);
+	else if(signum == SIGKILL || signum == SIGINT || signum == SIGILL || signum == SIGSEGV){
+        exit();
 		return;
     }
 	r = syscall_set_trapframe(0, tf);

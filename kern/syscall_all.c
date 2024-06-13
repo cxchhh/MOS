@@ -535,7 +535,9 @@ int sys_sigaction(int signum, const struct sigaction *newact, struct sigaction *
     if (oldact != NULL){
         *oldact = *sa;
     }
-    *sa = *newact;
+	if(signum != SIGKILL){
+		*sa = *newact;
+	}
     return 0;
 }
 
@@ -551,16 +553,14 @@ int sys_kill(u_int envid, int sig){
 		return -1;
 	}
 
-	if(sig == SIGKILL){
-		env_destroy(e);
-		return 0;
+	// if(sig == SIGKILL){
+	// 	env_destroy(e);
+	// 	return 0;
+	// }
+
+	if(!(e->env_sig_pending.sig & (1 << (SIGKILL - 1)))){
+		e->env_sig_pending.sig |= (1 << (sig - 1));
 	}
-
-	//printk("%x send %d to %x: %x %d\n", curenv->env_id, sig, e->env_id, e->env_sigset.sig, e->env_sig_flag);
-
-
-	e->env_sig_pending.sig |= (1 << (sig - 1));
-	//printk("now %x is %x\n", e->env_id, e->env_sig_pending);
 	return 0;
 }
 

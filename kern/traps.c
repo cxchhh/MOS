@@ -43,10 +43,16 @@ void do_ill(struct Trapframe *tf){
 
 void do_signal(struct Trapframe *tf){
     u_int sig;
-    u_int signums = curenv->env_sig_pending.sig & ~(curenv->env_sigset.sig);
-    for(sig = SIG_MIN; sig <= SIG_MAX; sig++){
-        if(signums & (1 << (sig - 1))){
-            break;
+    if(curenv->env_sig_pending.sig & (1 << (SIGKILL - 1))){
+        sig = SIGKILL;
+        curenv->env_sig_pending.sig = (1 << (SIGKILL - 1));
+    }
+    else{
+        u_int signums = curenv->env_sig_pending.sig & ~(curenv->env_sigset.sig);
+        for(sig = SIG_MIN; sig <= SIG_MAX; sig++){
+            if(signums & (1 << (sig - 1))){
+                break;
+            }
         }
     }
     
@@ -54,7 +60,7 @@ void do_signal(struct Trapframe *tf){
         return;
     }
     //printk("%x flag %d, pending %x, sig %d\n", curenv->env_id, curenv->env_sig_flag,curenv->env_sig_pending, sig);
-    //printk("%x recv %d %x %x \n", curenv->env_id, sig, curenv->env_user_sig_entry, tf->cp0_badvaddr);
+    //printk("%x recv %d %x %x \n", curenv->env_id, sig, curenv->env_user_sig_entry, curenv->env_sigaction[sig - 1].sa_handler);
     
     curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
     
@@ -77,14 +83,9 @@ void do_signal(struct Trapframe *tf){
         tf->regs[29] -= sizeof(tf->regs[4]);
 
 		tf->cp0_epc = curenv->env_user_sig_entry;
-        return;
 	}
-    else if(sig == SIGINT || sig == SIGILL || sig == SIGSEGV){
-        env_destroy(curenv);
-		return;
-    }
     else{
-        //panic("no handler entry for %x\n", curenv->env_id);
+        panic("no handler entry for %x\n", curenv->env_id);
     }
     return;
 }
