@@ -1,5 +1,4 @@
 #include <lib.h>
-#include <signal.h>
 
 void sigsegv_handler(int sig) {
     debugf("capture SIGSEGV signal.\n");

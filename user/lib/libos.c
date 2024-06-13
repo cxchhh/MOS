@@ -73,7 +73,7 @@ int sigismember(const sigset_t *__set, int __signo){
     if(__signo < SIG_MIN || __signo > SIG_MAX){
         return -1;
     }
-    if(__set->sig & (__signo - 1)){
+    if(__set->sig & (1 << (__signo - 1))){
         return 1;
     }
     return 0;
