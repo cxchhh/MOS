@@ -42,7 +42,6 @@ void do_ill(struct Trapframe *tf){
 
 
 void do_signal(struct Trapframe *tf){
-    
     u_int sig;
     for(sig = SIG_MIN; sig <= SIG_MAX; sig++){
         if(curenv->env_sig_pending.sig & (1 << (sig - 1))){
@@ -63,10 +62,6 @@ void do_signal(struct Trapframe *tf){
         return;
     }
     // printk("%x flag %d, pending %x, sig %d\n", curenv->env_id, curenv->env_sig_flag,curenv->env_sig_pending, sig);
-
-    if(curenv->env_sig_flag == sig){
-        return;
-    }
     //printk("%x recv %d %x %x \n", curenv->env_id, sig, curenv->env_user_sig_entry, tf->cp0_badvaddr);
     
     curenv->env_sig_flag = sig;

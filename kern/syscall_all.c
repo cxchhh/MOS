@@ -577,14 +577,14 @@ int sys_finish_sig(u_int envid, u_int signum, struct Trapframe *tf){
 	struct Env *e;
 	int r = 0;
 	try(envid2env(envid, &e, 0));
-	e->env_sig_pending.sig &= ~(1 << (signum - 1));
+	//e->env_sig_pending.sig &= ~(1 << (signum - 1));
 
 	e->env_sig_top--;
 	u_int fa_sig = e->env_sig_stack[e->env_sig_top];
 	e->env_sig_flag = fa_sig;
     e->env_sigset.sig = e->env_sigaction[fa_sig - 1].sa_mask.sig;
     for(int i = SIG_MIN; i <= SIG_MAX; i++){
-        if((e->env_sig_blocked.sig & (1 << (i - 1))) && !(e->env_sigset.sig & (1 << (i - 1)))){
+        if((e->env_sig_blocked.sig & (1 << (i - 1))) && !(e->env_sigset.sig & (1 << (i - 1))) && (i != fa_sig)){
             e->env_sig_pending.sig |= (1 << (i - 1));
 			e->env_sig_blocked.sig &= ~(1 << (i - 1));
         }

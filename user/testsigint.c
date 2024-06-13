@@ -5,6 +5,7 @@ void sigint_handler(int sig) {
     debugf("capture SIGINT.\n");
     int *ptr = 0;
     ptr = *ptr;
+    int a = *ptr + ptr;
     debugf("backfrom segv.\n");
     //exit();
 }
@@ -22,6 +23,7 @@ int main() {
     struct sigaction sa;
     sa.sa_handler = sigint_handler;
     sigemptyset(&sa.sa_mask);
+    sigaddset(&sa.sa_mask, SIGSEGV);
     sigaction(SIGINT, &sa, NULL);
 
     sa.sa_handler = sigsegv_handler;

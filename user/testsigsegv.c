@@ -5,6 +5,8 @@ void sigsegv_handler(int sig) {
     debugf("in sigsegv handler. cnt: %d\n", cnt);
     if(cnt <= 2){
         kill(0, SIGSEGV);
+        debugf("mid. cnt: %d\n", cnt);
+        kill(0, SIGSEGV);
         debugf("capture SIGSEGV signal. %d\n", cnt);
         cnt++;
     }
