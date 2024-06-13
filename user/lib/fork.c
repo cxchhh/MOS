@@ -101,9 +101,9 @@ static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int sign
 	sa_mask.sig = mask;
 	if(handler != NULL){
 		sa_mask.sig |= (1 << (signum - 1));
-		syscall_sigprocmask(SIG_BLOCK, &sa_mask, &old_mask);
+		try(syscall_sigprocmask(SIG_BLOCK, &sa_mask, &old_mask));
 		handler(signum);
-		syscall_sigprocmask(SIG_SETMASK, &old_mask, NULL);
+		try(syscall_sigprocmask(SIG_SETMASK, &old_mask, NULL));
 	}
 	else if(signum == SIGKILL || signum == SIGINT || signum == SIGILL || signum == SIGSEGV){
         exit();
