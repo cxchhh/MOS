@@ -109,6 +109,9 @@ static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int sign
         exit();
 		return;
     }
+	else{
+		tf->cp0_epc += 4;
+	}
 	r = syscall_set_trapframe(0, tf);
 	user_panic("syscall_set_trapframe returned %d", r);
 }

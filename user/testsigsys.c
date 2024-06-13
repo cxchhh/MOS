@@ -17,7 +17,7 @@ int main() {
     struct sigaction sa;
     sa.sa_handler = sigsys_handler;
     sigemptyset(&sa.sa_mask);
-    sigaction(SIGSYS, &sa, NULL);
+    //sigaction(SIGSYS, &sa, NULL);
 
     sa.sa_handler = sigsegv_handler;
     sigemptyset(&sa.sa_mask);
