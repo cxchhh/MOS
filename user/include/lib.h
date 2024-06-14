@@ -72,6 +72,8 @@ int syscall_sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset);
 int syscall_sigaction(int signum, const struct sigaction *newact, struct sigaction *oldact);
 int syscall_kill(u_int envid, int sig);
 int syscall_set_sig_entry(u_int envid, void (*func)(u_int, u_int, void (*handler)(int), struct Trapframe *));
+int syscall_set_sig_flag(u_int envid, u_int flag);
+
 
 // ipc.c
 void ipc_send(u_int whom, u_int val, const void *srcva, u_int perm);

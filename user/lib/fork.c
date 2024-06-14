@@ -95,6 +95,7 @@ static void duppage(u_int envid, u_int vpn) {
 
 static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int signum, void (*handler)(int), u_int mask) {
 	//debugf("%x %d in sig_entry! %x\n", env->env_id, signum, handler);
+	syscall_set_sig_flag(0, 0);
 	int r;
 	sigset_t sa_mask;
 	sigset_t old_mask;

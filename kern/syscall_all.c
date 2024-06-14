@@ -567,6 +567,13 @@ int sys_set_sig_entry(u_int envid, u_int func) {
 	return 0;
 }
 
+int sys_set_sig_flag(u_int envid, u_int flag) {
+	struct Env *env;
+	try(envid2env(envid, &env, 1));
+	env->env_sig_flag = flag;
+	return 0;
+}
+
 void *syscall_table[MAX_SYSNO] = {
     [SYS_putchar] = sys_putchar,
     [SYS_print_cons] = sys_print_cons,
@@ -589,6 +596,7 @@ void *syscall_table[MAX_SYSNO] = {
 	[SYS_sigprocmask] = sys_sigprocmask,
 	[SYS_sigaction] = sys_sigaction,
 	[SYS_set_sig_entry] = sys_set_sig_entry,
+	[SYS_set_sig_flag] = sys_set_sig_flag,
 	[SYS_kill] = sys_kill,
 };
 
