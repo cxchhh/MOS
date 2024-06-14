@@ -103,9 +103,7 @@ static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int sign
 		sa_mask.sig |= (1 << (signum - 1));
 		try(syscall_sigprocmask(SIG_BLOCK, &sa_mask, &old_mask));
 		try(syscall_set_sig_flag(0, 2));
-		//debugf("%x %d run handler %x\n", env->env_id, signum, handler);
 		handler(signum);
-		//debugf("%x %d end handler %x\n", env->env_id, signum, handler);
 		try(syscall_sigprocmask(SIG_SETMASK, &old_mask, NULL));
 	}
 	else if(signum == SIGKILL || signum == SIGINT || signum == SIGILL || signum == SIGSEGV){

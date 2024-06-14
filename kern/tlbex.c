@@ -111,17 +111,17 @@ void do_signal(struct Trapframe *tf){
     else{
 		
         u_int signums = curenv->env_sig_pending.sig & ~(curenv->env_sigset.sig);
-        for(sig = SIG_MIN; sig <= SIG_MAX; sig++){
+        for(sig = SIG_MAX; sig >= SIG_MIN; sig--){
             if(signums & (1 << (sig - 1))){
                 break;
             }
         }
     }
     
-    if(sig > SIG_MAX){
+    if(sig < SIG_MIN){
         return;
     }
-    //printk("%x recv %d, pending %x, handler %x\n", curenv->env_id, sig,curenv->env_sig_pending, curenv->env_sigaction[sig - 1].sa_handler);
+    
 	if(curenv->env_sig_flag == 1){
 		return;
 	}
@@ -131,6 +131,7 @@ void do_signal(struct Trapframe *tf){
 		return;
 	}
     curenv->env_sig_flag = 1;
+	//printk("%x recv %d, pending %x, handler %x\n", curenv->env_id, sig,curenv->env_sig_pending, curenv->env_sigaction[sig - 1].sa_handler);
 
     curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
     
