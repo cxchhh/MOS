@@ -1,23 +1,26 @@
 #include <lib.h>
 #include <signal.h>
 
+int a = 0;
+
 void sigill_handler(int sig) {
-    debugf("capture SIGILL signal.\n");
+    debugf("capture SIGILL signal. %d\n", a);
     syscall_yield();
-    debugf("SIGILL signal handler returns.\n");
+    debugf("SIGILL signal handler returns. %d\n", a);
     exit();
 }
 
 void sigchld_handler(int sig)
 {
-    debugf("capture SIGCHLD signal.\n");
-    debugf("SIGCHLD signal handler returns.\n");
+    debugf("capture SIGCHLD signal. %d\n", a);
+    debugf("SIGCHLD signal handler returns. %d\n", a);
 }
 
 void sigint_handler(int sig)
 {
-    debugf("capture SIGINT signal.\n");
-    debugf("SIGINT signal handler returns.\n");
+    a++;
+    debugf("capture SIGINT signal. %d\n", a);
+    debugf("SIGINT signal handler returns. %d\n", a);
 }
 
 int main() {

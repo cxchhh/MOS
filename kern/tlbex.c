@@ -1,6 +1,7 @@
 #include <bitops.h>
 #include <env.h>
 #include <pmap.h>
+#include <syscall.h>
 
 /* Lab 2 Key Code "tlb_invalidate" */
 /* Overview:
@@ -120,13 +121,17 @@ void do_signal(struct Trapframe *tf){
     if(sig > SIG_MAX){
         return;
     }
-	if(curenv->env_sig_flag){
+    //printk("%x recv %d, pending %x, handler %x\n", curenv->env_id, sig,curenv->env_sig_pending, curenv->env_sigaction[sig - 1].sa_handler);
+	if(curenv->env_sig_flag == 1){
 		return;
 	}
-	curenv->env_sig_flag = 1;
-    //printk("%x flag %d, pending %x, sig %d\n", curenv->env_id, curenv->env_sig_flag,curenv->env_sig_pending, sig);
-    //printk("%x recv %d %x %x \n", curenv->env_id, sig, curenv->env_user_sig_entry, curenv->env_sigaction[sig - 1].sa_handler);
-    
+	else if(curenv->env_sig_flag == 2){
+		//printk("%x %d back from sys_set_sig_flag\n", curenv->env_id, sig);
+		curenv->env_sig_flag = 0;
+		return;
+	}
+    curenv->env_sig_flag = 1;
+
     curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
     
     struct Trapframe tmp_tf = *tf;
