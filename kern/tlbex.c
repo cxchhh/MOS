@@ -109,24 +109,42 @@ void do_signal(struct Trapframe *tf){
 	}
     u_int sig;
     if(curenv->env_sig_pending.sig & (1 << (SIGKILL - 1))){
-        sig = SIGKILL;
-        curenv->env_sig_pending.sig = (1 << (SIGKILL - 1));
+        //sig = SIGKILL;
+        curenv->env_sig_pending.sig &= ~(1 << (SIGKILL - 1));
+		printk("[%08x] destroying %08x\n", curenv->env_id, curenv->env_id);
+		env_destroy(curenv);
     }
-    else{
+
         
-        for(sig = SIG_MIN; sig <= SIG_MAX; sig++){
-            if(signums & (1 << (sig - 1))){
-                break;
-            }
-        }
-    }
+	for(sig = SIG_MIN; sig <= SIG_MAX; sig++){
+		if(signums & (1 << (sig - 1))){
+			break;
+		}
+	}
     
     if(sig > SIG_MAX){
         return;
     }
     
 	//printk("%x recv %d, pending %x, handler %x\n", curenv->env_id, sig,curenv->env_sig_pending, curenv->env_sigaction[sig - 1].sa_handler);
-
+	struct Env* env;
+	struct sigaction sa = curenv->env_sigaction[sig - 1];
+	if (sa.sa_handler == NULL) { // 默认处理
+		//printk("[%08x] my handler to signr: %02d is DFL\n",curenv->env_id, signr);
+		curenv->env_sig_pending.sig &= ~(1 << (sig - 1)); //恢复pending
+		switch(sig) {
+			case SIGINT: case SIGILL: case SIGSEGV:	
+				if (envid2env(0, &env, 1) < 0) {
+					return;
+				}
+				printk("[%08x] destroying %08x\n", curenv->env_id, curenv->env_id);
+				env_destroy(env);
+				return;                                   //终止进程 
+			default:
+				tf->cp0_epc += 4;
+				return;                                  //忽略信号
+		}
+	}
     curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
 	u_int old_mask = curenv->env_sigset.sig;
 	curenv->env_sigset.sig = old_mask | curenv->env_sigaction[sig - 1].sa_mask.sig | (1 << (sig - 1));
