@@ -49,6 +49,10 @@ struct Env {
 	u_int env_sig_flag;
 	struct sigaction env_sigaction[SIG_MAX+1]; 
 
+	u_int env_sig_top;
+	u_int env_sig_stack[SIG_MAX+1];
+	u_int env_sig_mask_stack[SIG_MAX+1];
+
 };
 
 LIST_HEAD(Env_list, Env);

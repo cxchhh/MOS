@@ -94,3 +94,7 @@ int syscall_set_sig_entry(u_int envid, void (*func)(u_int, u_int, void (*handler
 int syscall_set_sig_flag(u_int envid, u_int flag) {
 	return msyscall(SYS_set_sig_flag, envid, flag);
 }
+
+int syscall_finish_sig(u_int envid, struct Trapframe *tf) {
+	return msyscall(SYS_finish_sig, envid, tf);
+}

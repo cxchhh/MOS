@@ -124,6 +124,12 @@ void do_signal(struct Trapframe *tf){
 	//printk("%x recv %d, pending %x, handler %x\n", curenv->env_id, sig,curenv->env_sig_pending, curenv->env_sigaction[sig - 1].sa_handler);
 
     curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
+	u_int old_mask = curenv->env_sigset.sig;
+	curenv->env_sigset.sig = old_mask | curenv->env_sigaction[sig - 1].sa_mask.sig | (1 << (sig - 1));
+	curenv->env_sig_top++;
+	curenv->env_sig_stack[curenv->env_sig_top] = sig;
+	curenv->env_sig_mask_stack[curenv->env_sig_top] = curenv->env_sigset.sig;
+
     
 	if (curenv->env_user_sig_entry) {
 		struct Trapframe tmp_tf = *tf;
@@ -131,12 +137,11 @@ void do_signal(struct Trapframe *tf){
 			tf->regs[29] = UXSTACKTOP;
 		}
 		tf->regs[29] -= sizeof(struct Trapframe);
-		*(struct Trapframe *)tf->regs[29] = tmp_tf;
-
-        tf->regs[4] = tf->regs[29];
+		tf->regs[4] = tf->regs[29];
 		tf->regs[5] = sig;
 		tf->regs[6] = curenv->env_sigaction[sig - 1].sa_handler;
-        tf->regs[7] = curenv->env_sigaction[sig - 1].sa_mask.sig;
+        tf->regs[7] = old_mask;
+		*(struct Trapframe *)tf->regs[29] = tmp_tf; 
 
 		tf->regs[29] -= sizeof(tf->regs[7]);
 		tf->regs[29] -= sizeof(tf->regs[6]);

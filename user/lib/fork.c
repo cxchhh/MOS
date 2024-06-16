@@ -93,16 +93,16 @@ static void duppage(u_int envid, u_int vpn) {
 	}
 }
 
-static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int signum, void (*handler)(int), u_int mask) {
+static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int signum, void (*handler)(int), u_int old_mask) {
 	//debugf("%x %d in sig_entry! %x\n", env->env_id, signum,debugf);
 	int r;
-	sigset_t sa_mask;
-	sigset_t old_mask;
-	sa_mask.sig = mask | (1 << (signum - 1));
+	// sigset_t sa_mask;
+	// sigset_t old_mask;
+	// sa_mask.sig = mask | (1 << (signum - 1));
 	if(handler != NULL){
-		try(sigprocmask(SIG_BLOCK, &sa_mask, &old_mask));
+		//try(sigprocmask(SIG_BLOCK, &sa_mask, &old_mask));
 		handler(signum);
-		try(sigprocmask(SIG_SETMASK, &old_mask, NULL));
+		
 	}
 	else if(signum == SIGKILL || signum == SIGINT || signum == SIGILL || signum == SIGSEGV){
         exit();
@@ -111,8 +111,9 @@ static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int sign
 	else if (signum == SIGSYS) {
 		tf->cp0_epc += 4;
 	}
-	r = syscall_set_trapframe(0, tf);
-	user_panic("syscall_set_trapframe returned %d", r);
+	//debugf("%x %d ready to return \n", env->env_id, signum);
+	r = syscall_finish_sig(0, tf);
+	user_panic("syscall_finish_sig returned %d", r);
 }
 
 int env_set_sig_entry(){

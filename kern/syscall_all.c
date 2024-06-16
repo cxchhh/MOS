@@ -248,7 +248,6 @@ int sys_exofork(void) {
 	e->env_pri = curenv->env_pri;
 
 	e->env_sigset.sig = curenv->env_sigset.sig;
-	e->env_sig_pending = curenv->env_sig_pending;
 	e->env_user_sig_entry = curenv->env_user_sig_entry;
 	for(int i=SIG_MIN;i<=SIG_MAX;i++){
 		e->env_sigaction[i-1].sa_handler = curenv->env_sigaction[i-1].sa_handler;
@@ -575,6 +574,28 @@ int sys_set_sig_flag(u_int envid, u_int flag) {
 	return 0;
 }
 
+int sys_finish_sig(u_int envid, struct Trapframe *tf) {
+	if (is_illegal_va_range((u_long)tf, sizeof *tf)) {
+		return -E_INVAL;
+	}
+	struct Env *env;
+	try(envid2env(envid, &env, 1));
+	if (env == curenv) {
+		if(env->env_sig_top){
+			env->env_sig_top--;
+			env->env_sigset.sig = env->env_sig_mask_stack[env->env_sig_top];
+		}
+		
+		*((struct Trapframe *)KSTACKTOP - 1) = *tf;
+		// return `tf->regs[2]` instead of 0, because return value overrides regs[2] on
+		// current trapframe.
+		return tf->regs[2];
+	} else {
+		env->env_tf = *tf;
+		return 0;
+	}
+}
+
 void *syscall_table[MAX_SYSNO] = {
     [SYS_putchar] = sys_putchar,
     [SYS_print_cons] = sys_print_cons,
@@ -597,6 +618,7 @@ void *syscall_table[MAX_SYSNO] = {
 	[SYS_sigprocmask] = sys_sigprocmask,
 	[SYS_sigaction] = sys_sigaction,
 	[SYS_set_sig_entry] = sys_set_sig_entry,
+	[SYS_finish_sig] = sys_finish_sig,
 	[SYS_set_sig_flag] = sys_set_sig_flag,
 	[SYS_kill] = sys_kill,
 };
