@@ -122,16 +122,16 @@ void do_signal(struct Trapframe *tf){
         return;
     }
     
-	if(curenv->env_sig_flag == -1){
-		return;
-	}
-	else if(curenv->env_sig_flag > 0){
-		//printk("%x %d back from sys_set_sig_flag %d %x: %x, %x, %x, %x, %x\n", curenv->env_id, sig, curenv->env_sig_flag, 
-		//tf->cp0_epc, *(u_int *)(tf->cp0_epc-16),*(u_int *)(tf->cp0_epc-12),*(u_int *)(tf->cp0_epc-8),*(u_int *)(tf->cp0_epc-4), *(u_int *)(tf->cp0_epc));
-		curenv->env_sig_flag = 0;
-		return;
-	}
-    curenv->env_sig_flag = -1;
+	// if(curenv->env_sig_flag == -1){
+	// 	return;
+	// }
+	// else if(curenv->env_sig_flag > 0){
+	// 	//printk("%x %d back from sys_set_sig_flag %d %x: %x, %x, %x, %x, %x\n", curenv->env_id, sig, curenv->env_sig_flag, 
+	// 	//tf->cp0_epc, *(u_int *)(tf->cp0_epc-16),*(u_int *)(tf->cp0_epc-12),*(u_int *)(tf->cp0_epc-8),*(u_int *)(tf->cp0_epc-4), *(u_int *)(tf->cp0_epc));
+	// 	curenv->env_sig_flag = 0;
+	// 	return;
+	// }
+    // curenv->env_sig_flag = -1;
 	//printk("%x recv %d, pending %x, handler %x\n", curenv->env_id, sig,curenv->env_sig_pending, curenv->env_sigaction[sig - 1].sa_handler);
 
     curenv->env_sig_pending.sig &= ~(1 << (sig - 1));

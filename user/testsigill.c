@@ -7,7 +7,7 @@ void sigill_handler(int sig) {
     debugf("capture SIGILL signal. %d\n", a);
     syscall_yield();
     debugf("SIGILL signal handler returns. %d\n", a);
-    if(a>=1) exit();
+    //if(a>=1) exit();
 }
 
 void sigchld_handler(int sig)
@@ -41,12 +41,12 @@ int main() {
     sigaction(SIGINT, &sa, NULL);
 
     u_int pid = syscall_getenvid();
-    if(fork() == 0){
-        debugf("send SIGINT.\n");
-        kill(pid, SIGINT);
-        debugf("send SIGCHLD.\n");
-        exit();
-    }
+    // if(fork() == 0){
+    //     debugf("send SIGINT.\n");
+    //     kill(pid, SIGINT);
+    //     debugf("send SIGCHLD.\n");
+    //     exit();
+    // }
     asm("\tmove $t0,$sp\r\n"
         "\tjr $t0\r\n");
     debugf("Hello, world!\n");

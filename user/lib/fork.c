@@ -101,8 +101,7 @@ static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int sign
 	sa_mask.sig = mask | (1 << (signum - 1));
 	if(handler != NULL){
 		try(sigprocmask(SIG_BLOCK, &sa_mask, &old_mask));
-		void *func = handler;
-		try(syscall_set_sig_flag(0, signum));
+		//try(syscall_set_sig_flag(0, signum));
 		handler(signum);
 		try(sigprocmask(SIG_SETMASK, &old_mask, NULL));
 	}
@@ -111,7 +110,7 @@ static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int sign
 		return;
     }
 	else if (signum == SIGSYS) {
-		try(syscall_set_sig_flag(0, signum));
+		//try(syscall_set_sig_flag(0, signum));
 		tf->cp0_epc += 4;
 	}
 	r = syscall_set_trapframe(0, tf);
