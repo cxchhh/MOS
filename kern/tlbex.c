@@ -135,8 +135,7 @@ void do_signal(struct Trapframe *tf){
 	curenv->env_sig_mask_stack[curenv->env_sig_top] = old_mask;
 	curenv->env_sig_top++;
     
-	if (curenv->env_user_sig_entry ) {
-
+	if (curenv->env_user_sig_entry) {
 		struct Trapframe tmp_tf = *tf;
 		if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
 			tf->regs[29] = UXSTACKTOP;
@@ -147,24 +146,12 @@ void do_signal(struct Trapframe *tf){
 		tf->regs[4] = tf->regs[29];
 		tf->regs[5] = sig;
 		tf->regs[6] = curenv->env_sigaction[sig - 1].sa_handler;
-        tf->regs[7] = curenv->env_id;
 
-		tf->regs[29] -= sizeof(tf->regs[7]);
 		tf->regs[29] -= sizeof(tf->regs[6]);
 		tf->regs[29] -= sizeof(tf->regs[5]);
         tf->regs[29] -= sizeof(tf->regs[4]);
 
-		// if (curenv->env_user_sig_entry == NULL) {
-		// 	if (sig == SIGKILL || sig == SIGSEGV || sig == SIGILL || sig == SIGINT) {
-		// 		sys_env_destroy(curenv->env_id);
-		// 		return;
-		// 	} else {
-		// 		tf->cp0_epc += 4;
-		// 	}
-		// 	sys_finish_sig(curenv->env_id, tf);
-		// } else {
-			tf->cp0_epc = curenv->env_user_sig_entry;
-		//}
+		tf->cp0_epc = curenv->env_user_sig_entry;
 	}
     else{
         panic("no handler entry for %x\n", curenv->env_id);
