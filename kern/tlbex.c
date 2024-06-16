@@ -130,9 +130,10 @@ void do_signal(struct Trapframe *tf){
 	curenv->env_sig_flag = sig;
 	curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
 
-	curenv->env_sig_stack[curenv->env_sig_top] = sig_now;
-	curenv->env_sig_mask_stack[curenv->env_sig_top] = old_mask;
 	curenv->env_sig_top++;
+	curenv->env_sig_stack[curenv->env_sig_top] = sig;
+	curenv->env_sig_mask_stack[curenv->env_sig_top] = curenv->env_sigset.sig;
+	
     
 	if (curenv->env_user_sig_entry || curenv -> env_sigaction[sig - 1].sa_handler == 0) {
 
