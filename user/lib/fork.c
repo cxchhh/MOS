@@ -113,7 +113,7 @@ static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int sign
 	// }
 	//debugf("%x %d ready to return \n", env->env_id, signum);
 	r = syscall_finish_sig(0, tf);
-	user_panic("syscall_finish_sig returned %d", r);
+	//user_panic("syscall_finish_sig returned %d", r);
 }
 
 int env_set_sig_entry(){
