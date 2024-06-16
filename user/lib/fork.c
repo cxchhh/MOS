@@ -99,16 +99,15 @@ static void __attribute__((noreturn)) sig_entry(struct Trapframe *tf, u_int sign
 	// sigset_t sa_mask;
 	// sigset_t old_mask;
 	// sa_mask.sig = mask | (1 << (signum - 1));
-	if(handler != NULL){
+	if(handler != NULL && signum != SIGKILL){
 		//try(sigprocmask(SIG_BLOCK, &sa_mask, &old_mask));
 		handler(signum);
-		
 	}
 	else if(signum == SIGKILL || signum == SIGINT || signum == SIGILL || signum == SIGSEGV){
         exit();
 		return;
     }
-	else if (signum == SIGSYS) {
+	else{
 		tf->cp0_epc += 4;
 	}
 	//debugf("%x %d ready to return \n", env->env_id, signum);

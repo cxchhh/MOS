@@ -538,7 +538,9 @@ int sys_sigaction(int signum, const struct sigaction *newact, struct sigaction *
     if (oldact != NULL){
         *oldact = *sa;
     }
-	*sa = *newact;
+	if(newact != NULL){
+		*sa = *newact;
+	}
 	sa->sa_mask.sig &= ~(1 << (SIGKILL - 1));
     return 0;
 }
@@ -580,12 +582,14 @@ int sys_finish_sig(u_int envid, struct Trapframe *tf) {
 	}
 	struct Env *env;
 	try(envid2env(envid, &env, 1));
+
+	if(env->env_sig_top){
+		env->env_sig_top--;
+		env->env_sigset.sig = env->env_sig_mask_stack[env->env_sig_top];
+		env->env_sig_flag = env->env_sig_stack[env->env_sig_top];
+	}
+
 	if (env == curenv) {
-		if(env->env_sig_top){
-			env->env_sig_top--;
-			env->env_sigset.sig = env->env_sig_mask_stack[env->env_sig_top];
-		}
-		
 		*((struct Trapframe *)KSTACKTOP - 1) = *tf;
 		// return `tf->regs[2]` instead of 0, because return value overrides regs[2] on
 		// current trapframe.
