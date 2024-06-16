@@ -109,7 +109,6 @@ void do_signal(struct Trapframe *tf){
         curenv->env_sig_pending.sig = (1 << (SIGKILL - 1));
     }
     else{
-		
         u_int signums = curenv->env_sig_pending.sig & ~(curenv->env_sigset.sig);
         for(sig = SIG_MIN; sig <= SIG_MAX; sig++){
             if(signums & (1 << (sig - 1))){
