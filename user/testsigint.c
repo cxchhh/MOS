@@ -2,17 +2,16 @@
 #include <signal.h>
 void sigint_handler(int sig) {
     
-    debugf("capture SIGINT.\n");
-    int *ptr = 0;
-    ptr = *ptr;
+    debugf("%x capture SIGINT.\n", env->env_id);
+    int child = fork();
     //int a = *ptr + ptr;
-    debugf("backfrom segv.\n");
+    debugf("%x backfrom segv.\n", env->env_id);
     //exit();
 }
 void sigill_handler(int sig) {
-    debugf("in SIGILL.\n");
+    debugf("%x in SIGILL.\n", env->env_id);
     kill(0, SIGINT);
-    debugf("capture SIGILL.\n");
+    debugf("%x capture SIGILL.\n", env->env_id);
     exit();
 }
 void sigsegv_handler(int sig) {
@@ -23,18 +22,15 @@ int main() {
     struct sigaction sa;
     sa.sa_handler = sigint_handler;
     sigemptyset(&sa.sa_mask);
-    sigaddset(&sa.sa_mask, SIGSEGV);
-    sigaddset(&sa.sa_mask, 21);
     sigaction(SIGINT, &sa, NULL);
 
     sa.sa_handler = sigsegv_handler;
     sigemptyset(&sa.sa_mask);
-    sigaction(SIGSEGV, &sa, NULL);
+    //sigaction(SIGSEGV, &sa, NULL);
     
     struct sigaction sa2;
     sa2.sa_handler = sigill_handler;
     sigemptyset(&sa2.sa_mask);
-    sigaddset(&sa2.sa_mask, 20);
     sigaction(SIGILL, &sa2, NULL);
 
     debugf("sending SIGINT to myself\n");

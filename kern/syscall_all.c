@@ -556,9 +556,7 @@ int sys_kill(u_int envid, int sig){
 		return -1;
 	}
 
-	if(!(e->env_sig_pending.sig & (1 << (SIGKILL - 1)))){
-		e->env_sig_pending.sig |= (1 << (sig - 1));
-	}
+	e->env_sig_pending.sig |= (1 << (sig - 1));
 	return 0;
 }
 

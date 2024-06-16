@@ -20,7 +20,7 @@ static void passive_alloc(u_int va, Pde *pgdir, u_int asid) {
 	struct Page *p = NULL;
 
 	if (va < UTEMP) {
-		// panic("address too low: %x",va);
+		//panic("curenv: %x, address too low: %x",curenv->env_id,va);
 		sys_kill(0, SIGSEGV);
 	}
 
@@ -121,28 +121,18 @@ void do_signal(struct Trapframe *tf){
         return;
     }
     
-	// if(curenv->env_sig_flag == -1){
-	// 	return;
-	// }
-	// else if(curenv->env_sig_flag > 0){
-	// 	//printk("%x %d back from sys_set_sig_flag %d %x: %x, %x, %x, %x, %x\n", curenv->env_id, sig, curenv->env_sig_flag, 
-	// 	//tf->cp0_epc, *(u_int *)(tf->cp0_epc-16),*(u_int *)(tf->cp0_epc-12),*(u_int *)(tf->cp0_epc-8),*(u_int *)(tf->cp0_epc-4), *(u_int *)(tf->cp0_epc));
-	// 	curenv->env_sig_flag = 0;
-	// 	return;
-	// }
-    // curenv->env_sig_flag = -1;
 	//printk("%x recv %d, pending %x, handler %x\n", curenv->env_id, sig,curenv->env_sig_pending, curenv->env_sigaction[sig - 1].sa_handler);
 
     curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
     
-    struct Trapframe tmp_tf = *tf;
-    if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
-        tf->regs[29] = UXSTACKTOP;
-    }
-    tf->regs[29] -= sizeof(struct Trapframe);
-    *(struct Trapframe *)tf->regs[29] = tmp_tf;
-
 	if (curenv->env_user_sig_entry) {
+		struct Trapframe tmp_tf = *tf;
+		if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
+			tf->regs[29] = UXSTACKTOP;
+		}
+		tf->regs[29] -= sizeof(struct Trapframe);
+		*(struct Trapframe *)tf->regs[29] = tmp_tf;
+
         tf->regs[4] = tf->regs[29];
 		tf->regs[5] = sig;
 		tf->regs[6] = curenv->env_sigaction[sig - 1].sa_handler;
