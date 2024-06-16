@@ -104,9 +104,12 @@ void do_tlb_mod(struct Trapframe *tf) {
 
 void do_signal(struct Trapframe *tf){
     u_int sig;
+	uint32_t sig_pending = curenv->env_sig_pending.sig;	
+	int sig_now = curenv->env_sig_flag;
+	uint32_t old_mask = curenv->env_sigset.sig;
     if(curenv->env_sig_pending.sig & (1 << (SIGKILL - 1))){
         sig = SIGKILL;
-        curenv->env_sig_pending.sig = (1 << (SIGKILL - 1));
+        //curenv->env_sig_pending.sig = (1 << (SIGKILL - 1));
     }
     else{
         u_int signums = curenv->env_sig_pending.sig & ~(curenv->env_sigset.sig);
@@ -117,38 +120,51 @@ void do_signal(struct Trapframe *tf){
         }
     }
     
-    if(sig > SIG_MAX){
+    if(sig > SIG_MAX || sig_now == SIGKILL){
         return;
     }
     
 	//printk("%x recv %d, pending %x, handler %x\n", curenv->env_id, sig,curenv->env_sig_pending, curenv->env_sigaction[sig - 1].sa_handler);
 
-    curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
-	u_int old_mask = curenv->env_sigset.sig;
-	curenv->env_sigset.sig = old_mask | curenv->env_sigaction[sig - 1].sa_mask.sig | (1 << (sig - 1));
-	curenv->env_sig_top++;
-	curenv->env_sig_stack[curenv->env_sig_top] = sig;
-	curenv->env_sig_mask_stack[curenv->env_sig_top] = curenv->env_sigset.sig;
+	curenv->env_sigset.sig |= (curenv->env_sigaction[sig - 1].sa_mask.sig | (1 << (sig - 1)));
+	curenv->env_sig_flag = sig;
+	curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
 
+	struct Trapframe tmp_tf = *tf;
+	if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
+		tf->regs[29] = UXSTACKTOP;
+	}
+	tf->regs[29] -= sizeof(struct Trapframe);
+	*(struct Trapframe *)tf->regs[29] = tmp_tf; 
     
-	if (curenv->env_user_sig_entry) {
-		struct Trapframe tmp_tf = *tf;
-		if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
-			tf->regs[29] = UXSTACKTOP;
-		}
-		tf->regs[29] -= sizeof(struct Trapframe);
+	if (curenv->env_user_sig_entry || curenv -> env_sigaction[sig - 1].sa_handler == 0) {
+		
 		tf->regs[4] = tf->regs[29];
 		tf->regs[5] = sig;
 		tf->regs[6] = curenv->env_sigaction[sig - 1].sa_handler;
-        tf->regs[7] = old_mask;
-		*(struct Trapframe *)tf->regs[29] = tmp_tf; 
+        tf->regs[7] = curenv->env_id;
 
 		tf->regs[29] -= sizeof(tf->regs[7]);
 		tf->regs[29] -= sizeof(tf->regs[6]);
 		tf->regs[29] -= sizeof(tf->regs[5]);
         tf->regs[29] -= sizeof(tf->regs[4]);
 
-		tf->cp0_epc = curenv->env_user_sig_entry;
+		
+		curenv->env_sig_stack[curenv->env_sig_top] = sig_now;
+		curenv->env_sig_mask_stack[curenv->env_sig_top] = old_mask;
+		curenv->env_sig_top++;
+
+		if (curenv->env_user_sig_entry == NULL) {
+			if (sig == SIGKILL || sig == SIGSEGV || sig == SIGILL || sig == SIGINT) {
+				sys_env_destroy(curenv->env_id);
+				return;
+			} else {
+				tf->cp0_epc += 4;
+			}
+			sys_finish_sig(curenv->env_id, tf);
+		} else {
+			tf->cp0_epc = curenv->env_user_sig_entry;
+		}
 	}
     else{
         panic("no handler entry for %x\n", curenv->env_id);
