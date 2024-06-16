@@ -110,28 +110,18 @@ void do_signal(struct Trapframe *tf){
     }
     else{
         u_int signums = curenv->env_sig_pending.sig & ~(curenv->env_sigset.sig);
-        for(sig = SIG_MIN; sig <= SIG_MAX; sig++){
-            if(signums & (1 << (sig - 1))){
-                break;
-            }
-        }
+        if (signums == 0) return;
+        sig = __builtin_ctz(signums) + 1;
     }
     
-    if(sig > SIG_MAX){
-        return;
-    }
-    
-	//printk("%x recv %d, pending %x, handler %x\n", curenv->env_id, sig,curenv->env_sig_pending, curenv->env_sigaction[sig - 1].sa_handler);
-
     curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
-	u_int old_mask = curenv->env_sigset.sig;
-	curenv->env_sigset.sig = old_mask | curenv->env_sigaction[sig - 1].sa_mask.sig | (1 << (sig - 1));
-	
-	curenv->env_sig_stack[curenv->env_sig_top] = curenv->env_sig_flag;
-	curenv->env_sig_mask_stack[curenv->env_sig_top] = old_mask;
-	curenv->env_sig_top++;
+    
+    curenv->env_sig_stack[curenv->env_sig_top] = curenv->env_sig_flag;
+    curenv->env_sig_mask_stack[curenv->env_sig_top] = curenv->env_sigset.sig;
+    curenv->env_sig_top++;
 
-	curenv->env_sig_flag = sig;
+    curenv->env_sigset.sig |= curenv->env_sigaction[sig - 1].sa_mask.sig | (1 << (sig - 1));
+    curenv->env_sig_flag = sig;
 
 	if (curenv->env_user_sig_entry) {
 		struct Trapframe tmp_tf = *tf;
