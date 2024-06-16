@@ -538,9 +538,9 @@ int sys_sigaction(int signum, const struct sigaction *newact, struct sigaction *
     if (oldact != NULL){
         *oldact = *sa;
     }
-	if(newact != NULL){
+	//if(newact != NULL){
 		*sa = *newact;
-	}
+	//}
 	sa->sa_mask.sig &= ~(1 << (SIGKILL - 1));
     return 0;
 }
