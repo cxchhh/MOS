@@ -9,13 +9,10 @@ int main() {
     struct sigaction sa;
     sa.sa_handler = sigchld_handler;
     sigemptyset(&sa.sa_mask);
-    //sigaction(SIGCHLD, &sa, NULL);
+    sigaction(SIGCHLD, &sa, NULL);
     if (fork() == 0) {
         exit();
     }
-    else{
-        
-    }
-    
+    while (1);
    return 0;
 }

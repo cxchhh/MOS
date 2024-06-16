@@ -19,7 +19,7 @@ void (*exception_handlers[32])(void) = {
     [1] = handle_mod,
     [8] = handle_sys,
 #endif
-    //[10] = handle_ill,
+    [10] = handle_ill,
 };
 
 /* Overview:
@@ -27,9 +27,8 @@ void (*exception_handlers[32])(void) = {
  *   'genex.S' wraps this function in 'handle_reserved'.
  */
 void do_reserved(struct Trapframe *tf) {
-	//print_tf(tf);
-	//panic("Unknown ExcCode %2d", (tf->cp0_cause >> 2) & 0x1f);
-    sys_kill(0, SIGILL);
+	print_tf(tf);
+	panic("Unknown ExcCode %2d", (tf->cp0_cause >> 2) & 0x1f);
 }
 
 void do_ill(struct Trapframe *tf){

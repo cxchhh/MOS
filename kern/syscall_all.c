@@ -247,7 +247,9 @@ int sys_exofork(void) {
 	e->env_status = ENV_NOT_RUNNABLE;
 	e->env_pri = curenv->env_pri;
 
+	e->env_sigset.sig = curenv->env_sigset.sig;
 	e->env_sig_pending = curenv->env_sig_pending;
+	e->env_user_sig_entry = curenv->env_user_sig_entry;
 	for(int i=SIG_MIN;i<=SIG_MAX;i++){
 		e->env_sigaction[i-1].sa_handler = curenv->env_sigaction[i-1].sa_handler;
 		e->env_sigaction[i-1].sa_mask.sig = curenv->env_sigaction[i-1].sa_mask.sig;

@@ -44,7 +44,6 @@ struct Env {
 	
 	// signals
 	sigset_t env_sigset;
-	sigset_t env_sig_blocked;
 	sigset_t env_sig_pending; 
 	u_int env_user_sig_entry;
 	u_int env_sig_flag;

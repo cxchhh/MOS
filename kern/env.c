@@ -260,7 +260,6 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	e->env_parent_id = parent_id;
 
 	e->env_sigset.sig = 0;
-	e->env_sig_blocked.sig = 0;
 	e->env_sig_pending.sig = 0;
 	e->env_sig_flag = 0;
 	for(int i = SIG_MIN; i <= SIG_MAX; i++){
