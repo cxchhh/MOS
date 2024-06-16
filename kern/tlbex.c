@@ -133,7 +133,6 @@ void do_signal(struct Trapframe *tf){
 
 	curenv->env_sig_flag = sig;
 
-    
 	if (curenv->env_user_sig_entry) {
 		struct Trapframe tmp_tf = *tf;
 		if (tf->regs[29] < USTACKTOP || tf->regs[29] >= UXSTACKTOP) {
