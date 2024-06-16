@@ -103,13 +103,17 @@ void do_tlb_mod(struct Trapframe *tf) {
 #endif
 
 void do_signal(struct Trapframe *tf){
+	u_int signums = curenv->env_sig_pending.sig & ~(curenv->env_sigset.sig);
+	if(signums == 0){
+		return;
+	}
     u_int sig;
     if(curenv->env_sig_pending.sig & (1 << (SIGKILL - 1))){
         sig = SIGKILL;
         curenv->env_sig_pending.sig = (1 << (SIGKILL - 1));
     }
     else{
-        u_int signums = curenv->env_sig_pending.sig & ~(curenv->env_sigset.sig);
+        
         for(sig = SIG_MIN; sig <= SIG_MAX; sig++){
             if(signums & (1 << (sig - 1))){
                 break;
