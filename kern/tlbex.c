@@ -104,12 +104,13 @@ void do_tlb_mod(struct Trapframe *tf) {
 
 void do_signal(struct Trapframe *tf){
     u_int sig;
-	uint32_t sig_pending = curenv->env_sig_pending.sig;	
-	int sig_now = curenv->env_sig_flag;
-	uint32_t old_mask = curenv->env_sigset.sig;
+	u_int sig_pending = curenv->env_sig_pending.sig;	
+	u_int sig_now = curenv->env_sig_flag;
+	u_int old_mask = curenv->env_sigset.sig;
+
     if(curenv->env_sig_pending.sig & (1 << (SIGKILL - 1))){
         sig = SIGKILL;
-        //curenv->env_sig_pending.sig = (1 << (SIGKILL - 1));
+        curenv->env_sig_pending.sig = (1 << (SIGKILL - 1));
     }
     else{
         u_int signums = curenv->env_sig_pending.sig & ~(curenv->env_sigset.sig);
@@ -120,7 +121,7 @@ void do_signal(struct Trapframe *tf){
         }
     }
     
-    if(sig > SIG_MAX || sig_now == SIGKILL){
+    if(sig > SIG_MAX ){
         return;
     }
     
@@ -130,7 +131,6 @@ void do_signal(struct Trapframe *tf){
 	curenv->env_sig_flag = sig;
 	curenv->env_sig_pending.sig &= ~(1 << (sig - 1));
 
-	
 	curenv->env_sig_stack[curenv->env_sig_top] = sig_now;
 	curenv->env_sig_mask_stack[curenv->env_sig_top] = old_mask;
 	curenv->env_sig_top++;
