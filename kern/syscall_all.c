@@ -524,22 +524,22 @@ int sys_sigprocmask(int __how, const sigset_t * __set, sigset_t * __oset){
 		else if(__how == SIG_SETMASK){
 			curenv->env_sigset.sig = __set->sig;
 		}
+		curenv->env_sigset.sig &= ~(1 << (SIGKILL - 1));
 	}
     
     return 0;
 }
 
 int sys_sigaction(int signum, const struct sigaction *newact, struct sigaction *oldact){
-	if(signum < SIG_MIN || signum > SIG_MAX){
+	if(signum < SIG_MIN || signum > SIG_MAX || signum == SIGKILL){
         return -1;
     }
     struct sigaction *sa = &curenv->env_sigaction[signum - 1];
     if (oldact != NULL){
         *oldact = *sa;
     }
-	if(signum != SIGKILL){
-		*sa = *newact;
-	}
+	*sa = *newact;
+	sa->sa_mask.sig &= ~(1 << (SIGKILL - 1));
     return 0;
 }
 

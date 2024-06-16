@@ -1,52 +1,29 @@
-#include <lib.h>
-#include <signal.h>
+#ifdef __x86_64__
+    #include <unistd.h>
+    #include <signal.h>
+    #include <stdlib.h>
+    #include <stdio.h>
+    #define PRINT printf
+#else 
+    #include <lib.h>
+    #define PRINT debugf
+#endif
+#define VICTIM 2
+int gbl = 0;
 
-int a = 0;
-
-void sigill_handler(int sig) {
-    debugf("capture SIGILL signal. %d\n", a);
-    syscall_yield();
-    debugf("SIGILL signal handler returns. %d\n", a);
-    exit();
-}
-
-void sigchld_handler(int sig)
-{
-    debugf("capture SIGCHLD signal. %d\n", a);
-    debugf("SIGCHLD signal handler returns. %d\n", a);
-}
-
-void sigint_handler(int sig)
-{
-    a++;
-    debugf("capture SIGINT signal. %d\n", a);
-    debugf("SIGINT signal handler returns. %d\n", a);
+void handler(int sig) {
+    PRINT("handler: sig is %d\n", sig);
+    PRINT("handler: gbl is %d\n", gbl++);
+    kill(0, VICTIM);
+    PRINT("handler: reaching end\n");
 }
 
 int main() {
-   
-    struct sigaction sa;
-    sa.sa_handler = sigill_handler;
-    sigemptyset(&sa.sa_mask);
-    sigaction(SIGILL, &sa, NULL);
-
-    sa.sa_handler = sigchld_handler;
-    sigemptyset(&sa.sa_mask);
-    sigaction(SIGCHLD, &sa, NULL);
-
-    sa.sa_handler = sigint_handler;
-    sigemptyset(&sa.sa_mask);
-    sigaction(SIGINT, &sa, NULL);
-
-    u_int pid = syscall_getenvid();
-    if(fork() == 0){
-        debugf("send SIGINT.\n");
-        kill(pid, SIGINT);
-        debugf("send SIGCHLD.\n");
-        exit();
-    }
-    asm("\tmove $t0,$sp\r\n"
-        "\tjr $t0\r\n");
-    debugf("Hello, world!\n");
+    struct sigaction sa2;
+    sa2.sa_handler = handler;
+    sigemptyset(&sa2.sa_mask);
+    sigaction(VICTIM, &sa2, 0);
+    kill(0, VICTIM);
+    PRINT("returned to current flow\n");
     return 0;
 }
