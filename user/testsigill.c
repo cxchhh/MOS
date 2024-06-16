@@ -22,7 +22,7 @@ void sigchld_handler(int sig)
 void sigint_handler(int sig)
 {
     a++;
-    //printf("capture SIGINT signal. %d\n", a);
+    printf("capture SIGINT signal. %d\n", a);
     //printf("SIGINT signal handler returns. %d\n", a);
 }
 
